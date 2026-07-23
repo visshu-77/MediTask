@@ -1,0 +1,40 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior: smooth;
+}
+
+body{
+    background-color: var(--white-color);
+    color: var(--black-color);
+    font-family: var(--font-family);
+}
+
+h1,h2,h3,h4,h5,h6{
+    font-family: var(--font-family);
+}
+
+a{
+    text-decoration: none;
+    color: inherit;
+}
+
+ul{
+    list-style: none;
+}
+
+img{
+    display: block;
+    max-width: 100%;
+}
+
+.page-width{
+    width: 100%;
+    max-width: 1250px;
+    margin: 0 auto;
+    padding:0 20px;
+}

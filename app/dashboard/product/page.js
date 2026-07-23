@@ -1,0 +1,181 @@
+"use client";
+import { useState } from "react";
+
+import LastParams from "../../components/lastParams";
+
+import TransparentButton from "../../components/transprentButton";
+import FilledButton from "../../components/filledButton";
+
+import TotalProductIcon from "../../components/Icons/product page icons/totalProductIcon";
+import LowStockIcon from "../../components/Icons/product page icons/lowStockIcon";
+import ExpiringSoonIcon from "../../components/Icons/product page icons/expiringSoonIcon";
+import OutofStockIcon from "../../components/Icons/product page icons/outOfStockIcon";
+
+import FilterIcon from "../../components/Icons/filterIcon";
+import SearchIcon from "../../components/Icons/SearchIcon";
+
+import Pagination from "../../components/pagination";
+
+import { Products } from "./products";
+
+
+const AnalyticsData = [
+    { id: 1, icon: TotalProductIcon, number: 16, content: "Total Product", color: "text-secondary", bg: "bg-[#F0FDFA]" },
+    { id: 2, icon: LowStockIcon, number: 4, content: "Low Stock", color: "text-red-500", bg: "bg-[#FFFBEB]" },
+    { id: 3, icon: ExpiringSoonIcon, number: 1, content: "Expiring Soon", color: "text-orange-500", bg: "bg-[#FFF7ED]" },
+    { id: 4, icon: OutofStockIcon, number: 3, content: "Out Of Stock", color: "text-red-500", bg: "bg-[#FEF3F2]" }
+]
+
+const filterOption = [
+    {
+        placeholder: "All Categories",
+        options: ["Product 1", "Product 2"]
+    },
+    {
+        placeholder: "All Suppliers",
+        options: ["Product 1", "Product 2"]
+    },
+    {
+        placeholder: "All Status",
+        options: ["In Stock", "Low Stock", "Out Of Stock"]
+    },
+    {
+        placeholder: "All Expiry",
+        options: ["Valid", "Expiring Soon", "Expired"]
+    },
+]
+
+
+export default function ProductPage() {
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const productsPerPage = 10;
+
+    const indexOfLastProduct = currentPage * productsPerPage;
+    const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+
+    const currentProducts = Products.slice(
+        indexOfFirstProduct,
+        indexOfLastProduct
+    );
+
+    const totalPages = Math.ceil(Products.length / productsPerPage);
+    return (
+        <div>
+            <LastParams />
+            <div className="flex justify-between mt-5">
+                <div>
+                    <h2 className="text-xl font-semibold">Products Management</h2>
+                    <p className="text-sm text-text">16 medicines across 9 categories</p>
+                </div>
+                <div className="flex gap-2">
+                    <TransparentButton name="Export" link="/dashboard" />
+                    <FilledButton name="Add Product" link="/dashboard" />
+                </div>
+            </div>
+
+            {/* stock divs */}
+            <div className="grid grid-cols-4 mt-5 gap-5">
+                {AnalyticsData.map((items) => {
+                    const Icons = items.icon;
+                    return (
+                        <div key={items.id} className="flex items-center gap-5 bg-white p-4 border border-[#E8ECF1] rounded-xl">
+                            <div>
+                                <Icons className={`h-9 w-9 ${items.color} ${items.bg} p-2 rounded`} />
+                            </div>
+                            <div>
+                                <h2 className="font-semibold text-xl">{items.number}</h2>
+                                <p className="text-xs font-medium text-text">{items.content}</p>
+                            </div>
+                        </div>
+                    )
+                })}
+            </div>
+
+            {/* Search Filter */}
+            <div className="bg-white p-4 border border-[#E8ECF1] rounded-xl mt-5 flex gap-5 items-center">
+                <div className="flex border border-[#E8ECF1] p-2 rounded-lg w-[50%] gap-2 items-center">
+                    <span>
+                        <SearchIcon className="h-4 w-4" />
+                    </span>
+                    <input type="text" placeholder="Seacrh Products.." className="w-[100%] focus:outline-none focus:ring-0 text-sm text-text" />
+                </div>
+                <div className="flex gap-5 items-center">
+                    <FilterIcon className="h-4 w-4" />
+                    {filterOption.map((filter) => {
+                        return (
+                            <select key={filter.placeholder} className="focus:outline-none focus:ring-0 border border-[#E8ECF1] rounded-lg py-2 px-4 text-text cursor-pointer">
+                                <option value="">{filter.placeholder}</option>
+                                {filter.options.map((option) => (
+                                    <option key={option} value={option}>
+                                        {option}
+                                    </option>
+                                ))}
+                            </select>
+                        )
+                    })}
+                </div>
+            </div>
+
+            {/* Products */}
+            <div className="border-[#E8ECF1] border rounded-xl mt-5">
+                <table className="w-full table-fixed">
+                    <thead>
+                        <tr className="text-text uppercase text-xs bg-[#FAFBFC]">
+                            <th className="p-4 text-left">Product</th>
+                            <th className="p-4 text-left">Category</th>
+                            <th className="p-4 text-left">Stock</th>
+                            <th className="p-4 text-left">Purchase</th>
+                            <th className="p-4 text-left">Selling</th>
+                            <th className="p-4 text-left">Expiry</th>
+                            <th className="p-4 text-left">Supplier</th>
+                            <th className="p-4 text-left">Status</th>
+                            <th className="p-4 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="w-full table-fixed bg-white">
+                        {currentProducts.map((product) => (
+                            <tr key={product.id}>
+                                <td className="p-4 text-left">
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-semibold">{product.name}</span>
+                                        <span className="text-text font-medium text-xs">ID:{product.id}</span>
+                                    </div>
+                                </td>
+                                <td className="p-4 text-left">
+                                    <span className="bg-[#E8ECF1] text-xs p-1 rounded-sm font-semibold text-text">{product.Categories}</span>
+                                </td>
+                                <td className="p-4 text-left font-semibold">
+                                    <span className={` ${product.stock === 0 ? "text-red-500" : product.stock < 50 ? "text-orange-500" : "text-black"}`}>{product.stock}</span>
+                                </td>
+                                <td className="p-4 text-left text-text">{product.purchase}</td>
+                                <td className="p-4 text-left text-secondary font-semibold">{product.selling}</td>
+                                <td className="p-4 text-left">
+                                    <span className="text-sm text-text">{product.expiry}</span>
+                                </td>
+                                <td className="p-4 text-left text-text text-sm">{product.supplier}</td>
+                                <td className="p-4 text-left">
+                                    <span className={` border rounded-full p-2 text-xs font-semibold ${product.status === 'In Stock' ? "text-secondary bg-green-100" : product.status === 'Out Of Stock' ? "text-red-500 bg-red-100" : "text-orange-500 bg-orange-100"} `}>• {product.status}</span>
+                                </td>
+                                <td className="p-4 text-left"></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                <div className="flex items-center justify-between p-4 border-t">
+                    <p className="text-sm text-text">
+                        Showing {indexOfFirstProduct + 1}-
+                        {Math.min(indexOfLastProduct, Products.length)} of {Products.length}
+                    </p>
+
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                    />
+                </div>
+            </div>
+
+        </div>
+    )
+}
