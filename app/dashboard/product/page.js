@@ -18,6 +18,21 @@ import Pagination from "../../components/pagination";
 
 import { Products } from "./products";
 
+const productCategories = [
+    ...new Set(Products.map((product)=> product.Categories))
+];
+
+const productSuppliers = [
+    ...new Set(Products.map((product)=> product.supplier))
+];
+
+const productStatus = [
+    ...new Set(Products.map((product)=> product.status))
+];
+
+const productExpiry = [
+    ...new Set(Products.map((product)=> product.expiry))
+];
 
 const AnalyticsData = [
     { id: 1, icon: TotalProductIcon, number: 16, content: "Total Product", color: "text-secondary", bg: "bg-[#F0FDFA]" },
@@ -29,24 +44,48 @@ const AnalyticsData = [
 const filterOption = [
     {
         placeholder: "All Categories",
-        options: ["Product 1", "Product 2"]
+        options: productCategories
     },
     {
         placeholder: "All Suppliers",
-        options: ["Product 1", "Product 2"]
+        options: productSuppliers
     },
     {
         placeholder: "All Status",
-        options: ["In Stock", "Low Stock", "Out Of Stock"]
+        options: productStatus
     },
     {
         placeholder: "All Expiry",
-        options: ["Valid", "Expiring Soon", "Expired"]
+        options: productExpiry
     },
 ]
 
 
 export default function ProductPage() {
+
+
+    const [searchText, setSearchtext] = useState("");
+    const [filters, setFilters] = useState({
+        category: "",
+        suppliers: "",
+        status: "",
+        expiry: "",
+    });
+
+    const SearchProducts = Products.filter((product) => {
+        const matchesSearch = product.name.toLowerCase(searchText.toLowerCase());
+        const matchesCategory = !filters.category || product.category === filters.category;
+        const matchesSuppliers = !filters.suppliers || product.suppliers === filters.suppliers;
+        const matchesStatus = !filters.status || product.status === filters.status;
+        const matchesExpiry = !filters.expiry || product.expiry === filters.expiry;
+        return(
+            matchesSearch &&
+            matchesCategory &&
+            matchesSuppliers &&
+            matchesStatus &&
+            matchesExpiry 
+        );
+    });
 
     const [currentPage, setCurrentPage] = useState(1);
     const productsPerPage = 10;
@@ -54,12 +93,11 @@ export default function ProductPage() {
     const indexOfLastProduct = currentPage * productsPerPage;
     const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
 
-    const currentProducts = Products.slice(
+    const currentProducts = SearchProducts.slice(
         indexOfFirstProduct,
         indexOfLastProduct
     );
-
-    const totalPages = Math.ceil(Products.length / productsPerPage);
+    const totalPages = Math.ceil(SearchProducts.length / productsPerPage);
     return (
         <div>
             <LastParams />
@@ -98,13 +136,26 @@ export default function ProductPage() {
                     <span>
                         <SearchIcon className="h-4 w-4" />
                     </span>
-                    <input type="text" placeholder="Seacrh Products.." className="w-[100%] focus:outline-none focus:ring-0 text-sm text-text" />
+                    <input type="text" value={searchText} onChange={(e) => setSearchtext(e.target.value)} placeholder="Seacrh Products.." className="w-[100%] focus:outline-none focus:ring-0 text-sm text-text" />
                 </div>
                 <div className="flex gap-5 items-center">
                     <FilterIcon className="h-4 w-4" />
                     {filterOption.map((filter) => {
+                        const filterkeys = 
+                            filter.placeholder === "All Categories" ? "category"
+                            : filter.placeholder === "All Suppliers" ? "suppliers"
+                            : filter.placeholder === "All Status" ? "status" 
+                            : "expiry";
                         return (
-                            <select key={filter.placeholder} className="focus:outline-none focus:ring-0 border border-[#E8ECF1] rounded-lg py-2 px-4 text-text cursor-pointer">
+                            <select key={filter.placeholder}
+                            value={filters[filterkeys]}
+                            onChange={(e)=>
+                                setFilters({
+                                    ...filters,
+                                    [filterkeys]: e.target.value,
+                                })
+                            }
+                            className="focus:outline-none focus:ring-0 border border-[#E8ECF1] rounded-lg py-2 px-4 text-text cursor-pointer">
                                 <option value="">{filter.placeholder}</option>
                                 {filter.options.map((option) => (
                                     <option key={option} value={option}>
@@ -112,7 +163,7 @@ export default function ProductPage() {
                                     </option>
                                 ))}
                             </select>
-                        )
+                        );
                     })}
                 </div>
             </div>
@@ -134,32 +185,38 @@ export default function ProductPage() {
                         </tr>
                     </thead>
                     <tbody className="w-full table-fixed bg-white">
-                        {currentProducts.map((product) => (
-                            <tr key={product.id}>
-                                <td className="p-4 text-left">
-                                    <div className="flex flex-col">
-                                        <span className="text-sm font-semibold">{product.name}</span>
-                                        <span className="text-text font-medium text-xs">ID:{product.id}</span>
-                                    </div>
-                                </td>
-                                <td className="p-4 text-left">
-                                    <span className="bg-[#E8ECF1] text-xs p-1 rounded-sm font-semibold text-text">{product.Categories}</span>
-                                </td>
-                                <td className="p-4 text-left font-semibold">
-                                    <span className={` ${product.stock === 0 ? "text-red-500" : product.stock < 50 ? "text-orange-500" : "text-black"}`}>{product.stock}</span>
-                                </td>
-                                <td className="p-4 text-left text-text">{product.purchase}</td>
-                                <td className="p-4 text-left text-secondary font-semibold">{product.selling}</td>
-                                <td className="p-4 text-left">
-                                    <span className="text-sm text-text">{product.expiry}</span>
-                                </td>
-                                <td className="p-4 text-left text-text text-sm">{product.supplier}</td>
-                                <td className="p-4 text-left">
-                                    <span className={` border rounded-full p-2 text-xs font-semibold ${product.status === 'In Stock' ? "text-secondary bg-green-100" : product.status === 'Out Of Stock' ? "text-red-500 bg-red-100" : "text-orange-500 bg-orange-100"} `}>• {product.status}</span>
-                                </td>
-                                <td className="p-4 text-left"></td>
+                        {currentProducts.length > 0 ? (
+                            currentProducts.map((product) => (
+                                <tr key={product.id}>
+                                    <td className="p-4 text-left">
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-semibold">{product.name}</span>
+                                            <span className="text-text font-medium text-xs">ID:{product.id}</span>
+                                        </div>
+                                    </td>
+                                    <td className="p-4 text-left">
+                                        <span className="bg-[#E8ECF1] text-xs p-1 rounded-sm font-semibold text-text">{product.Categories}</span>
+                                    </td>
+                                    <td className="p-4 text-left font-semibold">
+                                        <span className={` ${product.stock === 0 ? "text-red-500" : product.stock < 50 ? "text-orange-500" : "text-black"}`}>{product.stock}</span>
+                                    </td>
+                                    <td className="p-4 text-left text-text">{product.purchase}</td>
+                                    <td className="p-4 text-left text-secondary font-semibold">{product.selling}</td>
+                                    <td className="p-4 text-left">
+                                        <span className="text-sm text-text">{product.expiry}</span>
+                                    </td>
+                                    <td className="p-4 text-left text-text text-sm">{product.supplier}</td>
+                                    <td className="p-4 text-left">
+                                        <span className={` border rounded-full p-2 text-xs font-semibold ${product.status === 'In Stock' ? "text-secondary bg-green-100" : product.status === 'Out Of Stock' ? "text-red-500 bg-red-100" : "text-orange-500 bg-orange-100"} `}>• {product.status}</span>
+                                    </td>
+                                    <td className="p-4 text-left"></td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="9" className="text-center py-9 text-text">No Product Found</td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
                 <div className="flex items-center justify-between p-4 border-t">
