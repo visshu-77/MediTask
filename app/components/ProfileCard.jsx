@@ -18,7 +18,7 @@ export default function ProfileCard() {
     const sidebarData = [
         { id: 1, icon: DashboardIcon, name: "Dashboard", path: "/dashboard" },
         { id: 2, icon: ProductIcon, name: "Product", path: "/dashboard/product" },
-        { id: 3, icon: InventoryIcon, name: "Inventory", path: "/dashboard/inventory" },
+        { id: 3, icon: InventoryIcon, name: "Category", path: "/dashboard/Category" },
         { id: 4, icon: PurchaseIcon, name: "Purchase", path: "/dashboard/purchase" },
         { id: 5, icon: QuicksalesIcon, name: "Quick Sales", path: "/dashboard/quicksales" },
         { id: 6, icon: SuppliersIcon, name: "Suppliers", path: "/dashboard/suppliers" },

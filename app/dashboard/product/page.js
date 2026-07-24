@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-
+import Link from 'next/link';
 import LastParams from "../../components/lastParams";
 
 import TransparentButton from "../../components/transprentButton";
@@ -15,30 +15,52 @@ import FilterIcon from "../../components/Icons/filterIcon";
 import SearchIcon from "../../components/Icons/SearchIcon";
 
 import Pagination from "../../components/pagination";
+import HeadingWithButton from "../../components/Headings";
 
 import { Products } from "./products";
 
+
 const productCategories = [
-    ...new Set(Products.map((product)=> product.Categories))
+    ...new Set(Products.map((product) => product.Categories))
 ];
 
 const productSuppliers = [
-    ...new Set(Products.map((product)=> product.supplier))
+    ...new Set(Products.map((product) => product.supplier))
 ];
 
 const productStatus = [
-    ...new Set(Products.map((product)=> product.status))
+    ...new Set(Products.map((product) => product.status))
 ];
 
-const productExpiry = [
-    ...new Set(Products.map((product)=> product.expiry))
-];
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const fiveDaysLater = new Date(today);
+fiveDaysLater.setDate(today.getDate() + 10);
+
+const expiringSoonCount = Products.filter((product) => {
+    const expiryDate = new Date(product.expiry);
+    expiryDate.setHours(0, 0, 0, 0);
+
+    return expiryDate >= today && expiryDate <= fiveDaysLater;
+}).length;
+
+const outOfStockCount = Products.filter(
+    (product) => product.status === "Out Of Stock"
+).length;
+
+const lowStockCount = Products.filter(
+    (product) => product.status === "Low Stock"
+).length;
+
+const totalProductCount = Products.length;
 
 const AnalyticsData = [
-    { id: 1, icon: TotalProductIcon, number: 16, content: "Total Product", color: "text-secondary", bg: "bg-[#F0FDFA]" },
-    { id: 2, icon: LowStockIcon, number: 4, content: "Low Stock", color: "text-red-500", bg: "bg-[#FFFBEB]" },
-    { id: 3, icon: ExpiringSoonIcon, number: 1, content: "Expiring Soon", color: "text-orange-500", bg: "bg-[#FFF7ED]" },
-    { id: 4, icon: OutofStockIcon, number: 3, content: "Out Of Stock", color: "text-red-500", bg: "bg-[#FEF3F2]" }
+    { id: 1, icon: TotalProductIcon, number: totalProductCount, content: "Total Product", color: "text-secondary", bg: "bg-[#F0FDFA]" },
+    { id: 2, icon: LowStockIcon, number: lowStockCount, content: "Low Stock", color: "text-red-500", bg: "bg-[#FFFBEB]" },
+    { id: 3, icon: ExpiringSoonIcon, number: expiringSoonCount, content: "Expiring Soon", color: "text-orange-500", bg: "bg-[#FFF7ED]" },
+    { id: 4, icon: OutofStockIcon, number: outOfStockCount, content: "Out Of Stock", color: "text-red-500", bg: "bg-[#FEF3F2]" }
 ]
 
 const filterOption = [
@@ -56,7 +78,7 @@ const filterOption = [
     },
     {
         placeholder: "All Expiry",
-        options: productExpiry
+        options: ["Valid", "Expiring Soon", "Expired"]
     },
 ]
 
@@ -72,18 +94,36 @@ export default function ProductPage() {
         expiry: "",
     });
 
+    console.log("======> search Product",searchText)
+
     const SearchProducts = Products.filter((product) => {
-        const matchesSearch = product.name.toLowerCase(searchText.toLowerCase());
-        const matchesCategory = !filters.category || product.category === filters.category;
-        const matchesSuppliers = !filters.suppliers || product.suppliers === filters.suppliers;
+        const search = searchText.toLowerCase();
+
+        const matchesSearch = "" || product.name.toLowerCase().includes(search) 
+        || product.Categories.toLowerCase().includes(search) 
+        || product.supplier.toLowerCase().includes(search);
+        const matchesCategory = !filters.category || product.Categories === filters.category;
+        const matchesSuppliers = !filters.suppliers || product.supplier === filters.suppliers;
         const matchesStatus = !filters.status || product.status === filters.status;
-        const matchesExpiry = !filters.expiry || product.expiry === filters.expiry;
-        return(
+
+        const expiryDate = new Date(product.expiry);
+        expiryDate.setHours(0, 0, 0, 0);
+
+        const matchesExpiry = (() => {
+            switch (filters.expiry) {
+                case "Expired": return expiryDate < today;
+                case "Expiring Soon": return expiryDate >= today && expiryDate <= fiveDaysLater;
+                case "Valid": return expiryDate > fiveDaysLater;
+                default: return true;
+            }
+        })();
+
+        return (
             matchesSearch &&
             matchesCategory &&
             matchesSuppliers &&
             matchesStatus &&
-            matchesExpiry 
+            matchesExpiry
         );
     });
 
@@ -101,16 +141,14 @@ export default function ProductPage() {
     return (
         <div>
             <LastParams />
-            <div className="flex justify-between mt-5">
-                <div>
-                    <h2 className="text-xl font-semibold">Products Management</h2>
-                    <p className="text-sm text-text">16 medicines across 9 categories</p>
-                </div>
-                <div className="flex gap-2">
-                    <TransparentButton name="Export" link="/dashboard" />
-                    <FilledButton name="Add Product" link="/dashboard" />
-                </div>
-            </div>
+
+            <HeadingWithButton 
+            mainheading="Product Management"
+            contentLine="16 medicines across 9 categories"
+            firstButton="Export"
+            secondButton="Import"
+            thirdButton="Add Product"
+            />
 
             {/* stock divs */}
             <div className="grid grid-cols-4 mt-5 gap-5">
@@ -130,6 +168,7 @@ export default function ProductPage() {
                 })}
             </div>
 
+
             {/* Search Filter */}
             <div className="bg-white p-4 border border-[#E8ECF1] rounded-xl mt-5 flex gap-5 items-center">
                 <div className="flex border border-[#E8ECF1] p-2 rounded-lg w-[50%] gap-2 items-center">
@@ -141,21 +180,21 @@ export default function ProductPage() {
                 <div className="flex gap-5 items-center">
                     <FilterIcon className="h-4 w-4" />
                     {filterOption.map((filter) => {
-                        const filterkeys = 
+                        const filterkeys =
                             filter.placeholder === "All Categories" ? "category"
-                            : filter.placeholder === "All Suppliers" ? "suppliers"
-                            : filter.placeholder === "All Status" ? "status" 
-                            : "expiry";
+                                : filter.placeholder === "All Suppliers" ? "suppliers"
+                                    : filter.placeholder === "All Status" ? "status"
+                                        : "expiry";
                         return (
                             <select key={filter.placeholder}
-                            value={filters[filterkeys]}
-                            onChange={(e)=>
-                                setFilters({
-                                    ...filters,
-                                    [filterkeys]: e.target.value,
-                                })
-                            }
-                            className="focus:outline-none focus:ring-0 border border-[#E8ECF1] rounded-lg py-2 px-4 text-text cursor-pointer">
+                                value={filters[filterkeys]}
+                                onChange={(e) =>
+                                    setFilters({
+                                        ...filters,
+                                        [filterkeys]: e.target.value,
+                                    })
+                                }
+                                className="focus:outline-none focus:ring-0 border border-[#E8ECF1] rounded-lg py-2 px-4 text-text cursor-pointer">
                                 <option value="">{filter.placeholder}</option>
                                 {filter.options.map((option) => (
                                     <option key={option} value={option}>

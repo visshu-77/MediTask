@@ -1,4 +1,10 @@
+import { Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
+
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  weight: ["700"],
+});
 
 
 export default function RootLayout({

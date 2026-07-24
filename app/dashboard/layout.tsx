@@ -1,4 +1,5 @@
 import ProfileCard from "../components/ProfileCard";
+import { bricolage } from "../src/font";
 
 export default function DashboardLayout({
   children,
@@ -6,8 +7,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-sideBackground p-4">
-      <div className="flex gap-10">
+    <div className={` ${bricolage.className} bg-sideBackground p-4 `}>
+      <div className={` ${bricolage.className} flex gap-10 `}>
         <aside className="w-[15%] h-[100vh]">
           <ProfileCard />
         </aside>
